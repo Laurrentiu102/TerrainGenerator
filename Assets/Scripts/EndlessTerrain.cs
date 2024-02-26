@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class EndlessTerrain : MonoBehaviour
 {
+    private const float scale = 1f;
+    
     public const float maxViewDistance = 450;
 
     public Transform[] viewers = new Transform[20];
@@ -29,7 +31,7 @@ public class EndlessTerrain : MonoBehaviour
     {
         for (int i = 0; i < viewers.Length; i++)
         {
-            viewersPositions[i] = new Vector2(viewers[i].position.x, viewers[i].position.z);
+            viewersPositions[i] = new Vector2(viewers[i].position.x, viewers[i].position.z) / scale;
         }
         UpdateVisibleChunks();
     }
@@ -92,15 +94,19 @@ public class EndlessTerrain : MonoBehaviour
             meshFilter = meshObject.AddComponent<MeshFilter>();
             meshRenderer.material = material;
             
-            meshObject.transform.position = positionV3;
+            meshObject.transform.position = positionV3 * scale;
             meshObject.transform.parent = parent;
+            meshObject.transform.localScale = Vector3.one * scale; 
             SetVisible(false, null);
 
-            mapGenerator.RequestMapData(OnMapDataReceived);
+            mapGenerator.RequestMapData(position ,OnMapDataReceived);
         }
 
         void OnMapDataReceived(MapData mapData)
         {
+            Texture2D texture = TextureGenerator.TextureFromColorMap(mapData.colorMap, MapGenerator.mapChunkSize, MapGenerator.mapChunkSize);
+            meshRenderer.material.mainTexture = texture;
+            
             mapGenerator.RequestMeshData(mapData, OnMeshDataReceived);
         }
 
